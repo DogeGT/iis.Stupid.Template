@@ -20,56 +20,9 @@ namespace StupidTemplate.Mods
         public static GameObject platl;
         public static GameObject platr;
 
-        public static void Platforms()
-        {
-            if (ControllerInputPoller.instance.leftGrab)
-            {
-                if (platl == null)
-                {
-                    platl = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    platl.transform.localScale = new Vector3(0.025f, 0.3f, 0.4f);
-                    platl.transform.position = TrueLeftHand().position;
-                    platl.transform.rotation = TrueLeftHand().rotation;
-
-                    FixStickyColliders(platl);
-
-                    ColorChanger colorChanger = platl.AddComponent<ColorChanger>();
-                    colorChanger.colors = StupidTemplate.Settings.backgroundColor;
-                }
-                else
-                {
-                    if (platl != null)
-                    {
-                        Object.Destroy(platl);
-                        platl = null;
-                    }
-                }
-            }
-
-            if (ControllerInputPoller.instance.rightGrab)
-            {
-                if (platr == null)
-                {
-                    platr = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    platr.transform.localScale = new Vector3(0.025f, 0.3f, 0.4f);
-                    platr.transform.position = TrueRightHand().position;
-                    platr.transform.rotation = TrueRightHand().rotation;
-
-                    FixStickyColliders(platr);
-
-                    ColorChanger colorChanger = platr.AddComponent<ColorChanger>();
-                    colorChanger.colors = StupidTemplate.Settings.backgroundColor;
-                }
-                else
-                {
-                    if (platr != null)
-                    {
-                        Object.Destroy(platr);
-                        platr = null;
-                    }
-                }
-            }
-        }
+        public static bool leftWasGrab = false;
+        public static bool rightWasGrab = false;
+        
 
         public static bool previousTeleportTrigger;
         public static void TeleportGun()
