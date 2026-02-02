@@ -1,42 +1,48 @@
-﻿using GorillaLocomotion;
-using StupidTemplate.Classes;
-using UnityEngine;
-using UnityEngine.XR;
-using static StupidTemplate.Menu.Main;
+    using GorillaLocomotion;
+    using StupidTemplate.Classes;
+    using UnityEngine;
+    using UnityEngine.InputSystem;
+    using UnityEngine.XR;
+    using static StupidTemplate.Menu.Main;
+    using static StupidTemplate.Mods.Settings.Movement;
 
-namespace StupidTemplate.Mods
-{
-    public class Movement
+    namespace StupidTemplate.Mods
     {
-        public static void Fly()
+        public class Movement
         {
-            if (ControllerInputPoller.instance.rightControllerPrimaryButton)
+            public static void Fly()
             {
-                GTPlayer.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.forward * Time.deltaTime * Settings.Movement.flySpeed;
-                GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero;
-            }
-        }
-
-        public static GameObject platl;
-        public static GameObject platr;
-
-        public static void Platforms()
-        {
-            if (ControllerInputPoller.instance.leftGrab)
-            {
-                if (platl == null)
+                if (ControllerInputPoller.instance.rightControllerPrimaryButton)
                 {
-                    platl = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    platl.transform.localScale = new Vector3(0.025f, 0.3f, 0.4f);
-                    platl.transform.position = TrueLeftHand().position;
-                    platl.transform.rotation = TrueLeftHand().rotation;
-
-                    FixStickyColliders(platl);
-
-                    ColorChanger colorChanger = platl.AddComponent<ColorChanger>();
-                    colorChanger.colors = StupidTemplate.Settings.backgroundColor;
+                    GTPlayer.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.forward * Time.deltaTime * Settings.Movement.flySpeed;
+                    GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero;
                 }
-                else
+            }
+
+            public static GameObject platl;
+            public static GameObject platr;
+
+            public static bool leftWasGrab = false;
+            public static bool rightWasGrab = false;
+
+            public static void Platforms()
+            {
+                if (ControllerInputPoller.instance.leftGrab && !leftWasGrab)
+                {
+                    if (platl == null)
+                    {
+                        platl = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        platl.transform.localScale = new Vector3(0.025f, 0.3f, 0.4f);
+                        platl.transform.position = TrueLeftHand().position;
+                        platl.transform.rotation = TrueLeftHand().rotation;
+
+                        FixStickyColliders(platl);
+
+                        ColorChanger colorChanger = platl.AddComponent<ColorChanger>();
+                        colorChanger.colors = StupidTemplate.Settings.backgroundColor;
+                    }
+                }
+                if (!ControllerInputPoller.instance.leftGrab && leftWasGrab) // grab released
                 {
                     if (platl != null)
                     {
@@ -44,23 +50,24 @@ namespace StupidTemplate.Mods
                         platl = null;
                     }
                 }
-            }
 
-            if (ControllerInputPoller.instance.rightGrab)
-            {
-                if (platr == null)
+                if (ControllerInputPoller.instance.rightGrab && !rightWasGrab)
                 {
-                    platr = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    platr.transform.localScale = new Vector3(0.025f, 0.3f, 0.4f);
-                    platr.transform.position = TrueRightHand().position;
-                    platr.transform.rotation = TrueRightHand().rotation;
+                    if (platr == null)
+                    {
+                        platr = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        platr.transform.localScale = new Vector3(0.025f, 0.3f, 0.4f);
+                        platr.transform.position = TrueRightHand().position;
+                        platr.transform.rotation = TrueRightHand().rotation;
 
-                    FixStickyColliders(platr);
+                        FixStickyColliders(platr);
 
-                    ColorChanger colorChanger = platr.AddComponent<ColorChanger>();
-                    colorChanger.colors = StupidTemplate.Settings.backgroundColor;
+                        ColorChanger colorChanger = platr.AddComponent<ColorChanger>();
+                        colorChanger.colors = StupidTemplate.Settings.backgroundColor;
+                    }
                 }
-                else
+
+                if (!ControllerInputPoller.instance.rightGrab && rightWasGrab) // grab released
                 {
                     if (platr != null)
                     {
@@ -68,25 +75,27 @@ namespace StupidTemplate.Mods
                         platr = null;
                     }
                 }
+
+                leftWasGrab = ControllerInputPoller.instance.rightGrab;
+                rightWasGrab = ControllerInputPoller.instance.rightGrab;
             }
-        }
 
-        public static bool previousTeleportTrigger;
-        public static void TeleportGun()
-        {
-            if (ControllerInputPoller.instance.rightGrab)
+            public static bool previousTeleportTrigger;
+            public static void TeleportGun()
             {
-                var GunData = RenderGun();
-                GameObject NewPointer = GunData.NewPointer;
-
-                if (ControllerInputPoller.TriggerFloat(XRNode.RightHand) > 0.5f && !previousTeleportTrigger)
+                if (ControllerInputPoller.instance.rightGrab)
                 {
-                    GTPlayer.Instance.TeleportTo(NewPointer.transform.position + Vector3.up, GTPlayer.Instance.transform.rotation);
-                    GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero;
-                }
+                    var GunData = RenderGun();
+                    GameObject NewPointer = GunData.NewPointer;
 
-                previousTeleportTrigger = ControllerInputPoller.TriggerFloat(XRNode.RightHand) > 0.5f;
+                    if (ControllerInputPoller.TriggerFloat(XRNode.RightHand) > 0.5f && !previousTeleportTrigger)
+                    {
+                        GTPlayer.Instance.TeleportTo(NewPointer.transform.position + Vector3.up, GTPlayer.Instance.transform.rotation);
+                        GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero;
+                    }
+
+                    previousTeleportTrigger = ControllerInputPoller.TriggerFloat(XRNode.RightHand) > 0.5f;
+                }
             }
         }
     }
-}
